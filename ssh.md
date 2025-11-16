@@ -1,0 +1,1 @@
+ssh-copy-id -i ~/.ssh/ansible bernardo@192.168.68.102
