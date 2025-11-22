@@ -4,21 +4,13 @@
   become: true
   tasks:
 
-  - name: Installremove Apache2 package
-    apt:
+  - name: remove Apache2 and php package
+    package:
       name: 
-        - apache2
-        - libapache2-mod-php
+        - "{{ apache_package }}"
+        - "{{ php_package }}"
       state: absent
       update_cache: yes
-    when : ansible_distribution in ["Ubuntu", "Debian"]
-  - name: Install Apache2 and php packages in centos
-    dnf:
-      name: 
-        - httpd
-        - php
-      state: absent
-      update_cache: yes
-    when : ansible_distribution in ["CentOS"]
+    
 
  
