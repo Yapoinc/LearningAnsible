@@ -32,7 +32,7 @@
     when : ansible_distribution  == "Ubuntu"
 
 
-# CentOS Support
+
   - name: Install Apache2 and php package in centos
     tags: apache,httpd,centos
     dnf:
@@ -41,6 +41,16 @@
       - php
       state: latest
     when : ansible_distribution | lower in ["centos"]
+
+  - name: copy default html file for a site
+    tags: apache,apache2,ubuntu
+    copy:
+      src: files/default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+
 
     
 - hosts: db_servers
