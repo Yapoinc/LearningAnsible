@@ -1,0 +1,64 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: install updates (CentoS)
+    dnf:
+      update_only: yes
+      update_cache: yes
+    when : ansible_distribution | lower in ["centos", "redhat", "fedora"]
+
+  - name: install updates (Ubuntu/Debian)
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when : ansible_distribution | lower in ["ubuntu", "debian"]
+
+- hosts: web_servers
+  become: true
+  tasks:
+
+  - name: Install Apache2 and php package
+    apt:
+      name: 
+        - apache2
+        - libapache2-mod-php
+      state: latest
+    when : ansible_distribution  == "Ubuntu"
+
+
+# CentOS Support
+  - name: Install Apache2 and php package in centos
+    dnf:
+      name: 
+      - httpd
+      - php
+      state: latest
+    when : ansible_distribution | lower in ["centos"]
+- hosts: db_servers
+  become: true
+  tasks:
+
+  - name: Install Maria db server package
+    apt:
+      name: 
+        - mariadb-server
+      state: latest
+    when : ansible_distribution  in ["Ubuntu", "Debian"]
+  
+  - name: Install Maria db server package
+    dnf:
+      name: 
+        - mariadb
+      state: latest
+    when : ansible_distribution  in ["CentOS" ]
+- hosts: file_servers
+  become: true
+  tasks:
+  - name: Install Samba server package
+    package:
+      name: 
+        - samba
+      state: latest

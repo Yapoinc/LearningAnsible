@@ -15,7 +15,7 @@
 
 
 # CentOS Support
-  - name: Install Apache2 package in centos
+  - name: Install Apache2 and php package in centos
     dnf:
       name: 
       - httpd
