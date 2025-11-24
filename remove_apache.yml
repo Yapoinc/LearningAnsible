@@ -3,18 +3,23 @@
 - hosts: all
   become: true
   tasks:
-
-  - name: Update repository index
+  - name: Install remove Apache2 and php package
     apt:
+      name: 
+        - apache2
+        - libapache2-mod-php
+      update_cache: yes 
+      state: absent
+    when : ansible_distribution | lower in ["ubuntu", "debian"]
+
+  - name: Install Apache2 package in centos
+    dnf:
+      name: 
+      - httpd
+      - php
+      state: absent
       update_cache: yes
+    when : ansible_distribution | lower in ["centos"]
 
-  - name: Installremove Apache2 package
-    apt:
-      name: apache2
-      state: absent
 
-  - name: remove php support for apache
-    apt:
-      name: libapache2-mod-php
-      state: absent
  
