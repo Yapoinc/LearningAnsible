@@ -16,4 +16,7 @@ ansible all -m apt -a "upgrade=dist" --become --ask-become-pass // sudo apt dist
 play playbook
 --------------
 ansible-playbook --ask-become-pass install_apache.yml
+ansible-playbook --list-tags site.yml 
+ansible-playbook --ask-become-pass --tags centos  site.yml
+ansible-playbook --ask-become-pass --tags "apache,db"  site.yml
 
