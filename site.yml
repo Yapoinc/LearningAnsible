@@ -28,18 +28,14 @@
         - unzip
       state: latest
   
-  - name: install terraform package    
-    unarchive:
-      src: https://releases.hashicorp.com/terraform/1.14.0/terraform_1.14.0_linux_amd64.zip           
-      dest: /usr/local/bin/
-      remote_src: yes
-      mode: '0755'
-      owner: root
-      group: root
-
-     
-
-    
+  # - name: install terraform package    
+  #   unarchive:
+  #     src: https://releases.hashicorp.com/terraform/1.14.0/terraform_1.14.0_linux_amd64.zip           
+  #     dest: /usr/local/bin/
+  #     remote_src: yes
+  #     mode: '0755'
+  #     owner: root
+  #     group: root
 
 - hosts: web_servers
   become: true
@@ -64,6 +60,13 @@
       - php
       state: latest
     when : ansible_distribution | lower in ["centos"]
+
+  # this is not needed as the default file is replaced by the copy module below
+  - name: delete default html file for a site in centos
+    tags: apache,httpd,centos
+    file: 
+      path: /var/www/html/index.html
+      state: absent
 
   - name: copy default html file for a site
     tags: apache,apache2,ubuntu
