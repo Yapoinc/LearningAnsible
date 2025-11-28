@@ -61,12 +61,53 @@
       state: latest
     when : ansible_distribution | lower in ["centos"]
 
-  # this is not needed as the default file is replaced by the copy module below
-  - name: delete default html file for a site in centos
+  - name: start httpd service in (CentOS)
     tags: apache,httpd,centos
-    file: 
-      path: /var/www/html/index.html
-      state: absent
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when : ansible_distribution | lower in ["centos"]
+
+  - name: Allow HTTP service (port 80) in the firewall
+    ansible.posix.firewalld:
+      service: http
+      permanent: true
+      state: enabled
+      immediate: true # Applies the change without needing a full firewall reload
+    when : ansible_distribution | lower in ["centos"]
+  
+  - name: Allow HTTPS service (port 443) in the firewall
+    ansible.posix.firewalld:
+      service: https
+      permanent: true
+      state: enabled
+      immediate: true
+    when : ansible_distribution | lower in ["centos"]
+
+  - name: Change e-mail address for admin in centos
+    tags: apache,apache2,ubuntu
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin bernardoapelt@outlook.com
+    when : ansible_distribution | lower in ["centos"]
+    register: httpd
+
+  - name: Restart httpd service in centos
+    tags: apache,httpd,centos
+    service:
+      name: httpd
+      state: restarted
+    when : httpd.changed 
+
+
+  # this is not needed as the default file is replaced by the copy module below
+  # - name: delete default html file for a site in centos
+  #   tags: apache,httpd,centos
+  #   file: 
+  #     path: /var/www/html/index.html
+  #     state: absent
 
   - name: copy default html file for a site
     tags: apache,apache2,ubuntu
