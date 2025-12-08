@@ -1,0 +1,164 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: update repo cache (CentoS)
+    tags: always
+    dnf:
+      update_cache: yes
+    changed_when: false
+    when : ansible_distribution | lower in ["centos", "redhat", "fedora"]
+
+  - name: update repo cache (Ubuntu/Debian)
+    tags: always
+    apt:
+      update_cache: yes
+    changed_when: false
+    when : ansible_distribution | lower in ["ubuntu", "debian"]
+
+#this is a play
+- hosts: all
+  become: true
+  tasks:
+
+  - name: add ssh key for simone user
+    tags: always
+    authorized_key:
+      user: simone
+      # state: present
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPwAda4uXN4/o9VksxtKCZxWoCcaAzFWKPGKR65JSrUj Ansible checvron"
+# end of play
+
+- hosts: workstations
+  become: true
+  tasks:
+
+  - name: install unzip package    
+    package:
+      name: 
+        - unzip
+      state: latest
+  
+  # - name: install terraform package    
+  #   unarchive:
+  #     src: https://releases.hashicorp.com/terraform/1.14.0/terraform_1.14.0_linux_amd64.zip           
+  #     dest: /usr/local/bin/
+  #     remote_src: yes
+  #     mode: '0755'
+  #     owner: root
+  #     group: root
+
+- hosts: web_servers
+  become: true
+  tasks:
+
+  - name: Install Apache2 and php package
+    tags: apache,apache2,ubuntu
+    apt:
+      name: 
+        - apache2
+        - libapache2-mod-php
+      state: latest
+    when : ansible_distribution  == "Ubuntu"
+
+
+
+  - name: Install Apache2 and php package in centos
+    tags: apache,httpd,centos
+    dnf:
+      name: 
+      - httpd
+      - php
+      state: latest
+    when : ansible_distribution | lower in ["centos"]
+
+  - name: start httpd service in (CentOS)
+    tags: apache,httpd,centos
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when : ansible_distribution | lower in ["centos"]
+
+  - name: Allow HTTP service (port 80) in the firewall
+    ansible.posix.firewalld:
+      service: http
+      permanent: true
+      state: enabled
+      immediate: true # Applies the change without needing a full firewall reload
+    when : ansible_distribution | lower in ["centos"]
+  
+  - name: Allow HTTPS service (port 443) in the firewall
+    ansible.posix.firewalld:
+      service: https
+      permanent: true
+      state: enabled
+      immediate: true
+    when : ansible_distribution | lower in ["centos"]
+
+  - name: Change e-mail address for admin in centos
+    tags: apache,apache2,ubuntu
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin bernardoapelt@outlook.com
+    when : ansible_distribution | lower in ["centos"]
+    register: httpd
+
+  - name: Restart httpd service in centos
+    tags: apache,httpd,centos
+    service:
+      name: httpd
+      state: restarted
+    when : httpd.changed 
+
+
+  # this is not needed as the default file is replaced by the copy module below
+  # - name: delete default html file for a site in centos
+  #   tags: apache,httpd,centos
+  #   file: 
+  #     path: /var/www/html/index.html
+  #     state: absent
+
+  - name: copy default html file for a site
+    tags: apache,apache2,ubuntu
+    copy:
+      src: files/default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+
+
+    
+- hosts: db_servers
+  become: true
+  tasks:
+
+  - name: Install Maria db server package
+    tags: mariadb,db,ubuntu
+    apt:
+      name: 
+        - mariadb-server
+      state: latest
+    when : ansible_distribution  in ["Ubuntu", "Debian"]
+  
+  - name: Install Maria db server package
+    tags: mariadb,db,centos
+    dnf:
+      name: 
+        - mariadb
+      state: latest
+    when : ansible_distribution  in ["CentOS" ]
+
+- hosts: file_servers
+  tags: samba
+  become: true
+  tasks:
+  - name: Install Samba server package
+    package:
+      name: 
+        - samba
+      state: latest

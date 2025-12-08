@@ -1,0 +1,6 @@
+- name: Install Samba server package
+  tags: samba 
+  package:
+    name: 
+      - samba
+    state: latest
