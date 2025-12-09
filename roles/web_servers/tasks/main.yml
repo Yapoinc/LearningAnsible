@@ -1,39 +1,19 @@
-- name: Install Apache2 and php package
-  tags: apache,apache2,ubuntu
-  apt:
+- name: Install Apache and php package
+  tags: apache, httpd, php
+  package:
     name: 
-      - apache2
-      - libapache2-mod-php
+      - "{{ apache_package_name }}"
+      - "{{ php_package_name }}"
     state: latest
-  when : ansible_distribution  == "Ubuntu"
 
-
-
-- name: Install Apache2 and php package in centos
-  tags: apache,httpd,centos
-  dnf:
-    name: 
-    - httpd
-    - php
-    state: latest
-  when : ansible_distribution | lower in ["centos"]
-
-- name: start httpd service in (CentOS)
-  tags: apache,httpd,centos
+- name: start and enable apache service 
+  tags: apache,httpd
   service:
-    name: httpd
+    name: "{{ apache_service }}"
     state: started
     enabled: yes
-  when : ansible_distribution | lower in ["centos"]
 
-- name: Allow HTTP service (port 80) in the firewall
-  ansible.posix.firewalld:
-    service: http
-    permanent: true
-    state: enabled
-    immediate: true # Applies the change without needing a full firewall reload
-  when : ansible_distribution | lower in ["centos"]
-  
+
 - name: Allow HTTPS service (port 443) in the firewall
   ansible.posix.firewalld:
     service: https
@@ -49,14 +29,8 @@
     regexp: '^ServerAdmin'
     line: ServerAdmin bernardoapelt@outlook.com
   when : ansible_distribution | lower in ["centos"]
-  register: httpd
+  notify: restart_apache
 
-- name: Restart httpd service in centos
-  tags: apache,httpd,centos
-  service:
-    name: httpd
-    state: restarted
-  when : httpd.changed 
 
 - name: copy default html file for a site
   tags: apache,apache2,ubuntu

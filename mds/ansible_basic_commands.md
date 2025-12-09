@@ -22,4 +22,4 @@ ansible-playbook --ask-become-pass --tags centos  site.yml
 
 ansible-playbook --ask-become-pass --tags "apache,db"  site.yml
 ansible-playbook --ask-become-pass bootstrap.yml
-
+ansible-playbook site.yml

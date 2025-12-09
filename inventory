@@ -1,14 +1,14 @@
 [web_servers]
-bernardo@192.168.68.201
-bernardo@192.168.68.202
-bernardo@192.168.68.205 
+192.168.68.201
+192.168.68.202
+192.168.68.205 
 
 [db_servers]
-bernardo@192.168.68.203
+192.168.68.203
 
 [file_servers]
-bernardo@192.168.68.204
+192.168.68.204
 
 [workstations]
-bernardo@127.0.0.1
+127.0.0.1
 
